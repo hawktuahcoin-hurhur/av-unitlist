@@ -1,0 +1,511 @@
+{
+  "sessionStart": "2025-11-17T00:00:00Z",
+  "currentVersion": "1.53",
+  "pendingChanges": [],
+  "implementedChanges": [
+    {
+      "prompt": "Change trait names from generic to specific (Monarch, Solar, Ethereal, etc.)",
+      "implementation": "Added 7 trait types with dropdown selector",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17"
+    },
+    {
+      "prompt": "Update Rogita's passives to Super Saiyan 4 version",
+      "implementation": "Updated Rogita passives: Gotchya!, The Monkey King, Instant Teleportation",
+      "files": [
+        "src/unitPassives.js"
+      ],
+      "timestamp": "2025-11-17"
+    },
+    {
+      "prompt": "Add Bug Reports and Suggestions links",
+      "implementation": "Added two glass-card links at top left of menu page",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17"
+    },
+    {
+      "prompt": "Create patch notes system",
+      "implementation": "Added scrollable patch notes panel in center of menu with auto-versioning",
+      "files": [
+        "src/patchNotes.js",
+        "src/components/TierListApp.jsx",
+        "src/index.css",
+        "update-patch-notes.py"
+      ],
+      "timestamp": "2025-11-17"
+    },
+    {
+      "prompt": "Auto-patch system created",
+      "implementation": "Added automatic patch notes tracking with revert detection",
+      "files": [
+        "auto-patch.py",
+        "log-change.py",
+        ".copilot-session.json"
+      ],
+      "timestamp": "2025-11-17T02:41:28.371580"
+    },
+    {
+      "prompt": "Create two-tier dev mode with API key protection",
+      "implementation": "Added Advanced Dev Mode requiring API key for character icon, rarity, and color editing",
+      "files": [
+        "src/components/TierListApp.jsx",
+        "src/config.js"
+      ],
+      "timestamp": "2025-11-17T02:50:18.269625"
+    },
+    {
+      "prompt": "Add shareable tierlist feature",
+      "implementation": "Added Create Shareable Tierlist button with encoded URL generation, includes notes and traits",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T03:03:01.675453"
+    },
+    {
+      "prompt": "Change CuChulainn to Mythic rarity",
+      "implementation": "Updated CuChulainn from Exclusive to Mythic rarity",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T03:10:12.083535"
+    },
+    {
+      "prompt": "Update multiple character rarities",
+      "implementation": "Changed Saber, Sosuke, Kempache, LordFriezo, Noruto to Mythic; Changed Pweeny to Exclusive",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T03:12:16.374683"
+    },
+    {
+      "prompt": "Add Vanguard Familiar passives feature",
+      "implementation": "Added Familiar tab to unit modal showing familiar abilities for 6 units (Gujo, Gilgamesh, Sukono, Valentine, Tengon, Obita). Created familiarPassives.js with familiar data. Tab includes familiar icon and ability descriptions.",
+      "files": [
+        "src/components/TierListApp.jsx",
+        "src/familiarPassives.js"
+      ],
+      "timestamp": "2025-11-17T03:27:37.086105"
+    },
+    {
+      "prompt": "Update familiar passives with accurate wiki data",
+      "implementation": "Replaced familiar passives with accurate data from Anime Vanguards Wiki for all 6 familiars (Gujo's Glasses, Sukono's Finger, Tengon's Smokebomb, Key of Babylon, Secluded Kunai, American Flag)",
+      "files": [
+        "src/familiarPassives.js"
+      ],
+      "timestamp": "2025-11-17T03:33:51.547443"
+    },
+    {
+      "prompt": "Add familiar icons to familiar tab",
+      "implementation": "Updated familiar icon paths to use correct folder (Images/Units/Familiar icons/) for both tab button and header display",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T03:36:25.129749"
+    },
+    {
+      "prompt": "Update familiar icons and backgrounds",
+      "implementation": "Changed familiar icon paths to use familiar names (e.g., 'American Flag.webp' instead of 'ValentineFamiliar.webp'). Added unit rarity background gradients to familiar icon display matching the unit's rarity style",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T03:39:40.293216"
+    },
+    {
+      "prompt": "Fix familiar icon URL encoding",
+      "implementation": "Added proper URL encoding (encodeURIComponent) to handle special characters in familiar icon filenames (apostrophes and spaces)",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T03:41:50.117675"
+    },
+    {
+      "prompt": "Simplify familiar icon display with gradient overlay",
+      "implementation": "Replaced image loading with sparkle emoji overlay on unit's rarity gradient background. Changed tab label from 'Familiar' to show actual familiar name (e.g., 'American Flag', 'Gujo's Glasses')",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T03:43:32.159212"
+    },
+    {
+      "prompt": "Add familiar icon images overlaid on gradient backgrounds",
+      "implementation": "Added familiar icon images from Units/Familiar icons/ folder overlaid on unit rarity gradient backgrounds in both tab button and header display",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T03:44:49.598472"
+    },
+    {
+      "prompt": "Add fallback display for familiar icons",
+      "implementation": "Added sparkle emoji fallback when familiar icon images fail to load (images not yet committed to GitHub). Icons will show image if available, otherwise display sparkle emoji on gradient background",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T04:04:44.848068"
+    },
+    {
+      "prompt": "Fix React hooks violation in familiar tab",
+      "implementation": "Removed useState hook from IIFE that was breaking React's rules of hooks. Now uses simple CSS display toggle for fallback emoji",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T04:07:02.669207"
+    },
+    {
+      "prompt": "Remove sparkle emoji fallback from familiar icons",
+      "implementation": "Removed sparkle emoji fallback now that familiar icon images are properly committed to GitHub and loading correctly",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T04:11:56.905028"
+    },
+    {
+      "prompt": "Remove sparkle emoji fallback from familiar icons",
+      "implementation": "Removed sparkle emoji fallback now that familiar icon images are properly committed to GitHub and loading correctly",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T04:12:29.818253"
+    },
+    {
+      "prompt": "Add dynamic background cycling on tab changes",
+      "implementation": "Background now randomly cycles through all images in Images/backgrounds/bgs/ folder when switching between menu/tierlist/unitlist views. Each view change picks a random background from the 7 available images",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T04:15:01.937581"
+    },
+    {
+      "prompt": "Add dynamic themed UI for each background",
+      "implementation": "Created 7 unique color themes that automatically apply when backgrounds change. Each theme includes custom colors for glass effects, overlays, and accents that complement the background image (Blue, Purple, Pink, Green, Orange, Cyan, Red themes)",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T04:21:45.315378"
+    },
+    {
+      "prompt": "Update patch notes and title theming",
+      "implementation": "Patch notes no longer show file/folder references. Title text now dynamically changes color and glow to match the current background theme",
+      "files": [
+        "src/components/TierListApp.jsx",
+        "auto-patch.py",
+        "log-change.py"
+      ],
+      "timestamp": "2025-11-17T04:24:15.587746"
+    },
+    {
+      "prompt": "Add guide modal and PDF export with watermark",
+      "implementation": "Added comprehensive guide modal with sections for getting started, dev mode, exporting, and tips. Implemented PDF export functionality using jspdf and html2canvas libraries. Created watermark image overlay for professional PDF exports. Added Download PDF button next to shareable link button.",
+      "files": [
+        "src/components/TierListApp.jsx",
+        " Images/watermark.png",
+        " package.json"
+      ],
+      "timestamp": "2025-11-17T04:35:16.984688"
+    },
+    {
+      "prompt": "Enhanced gradient UI effects",
+      "implementation": "Improved glass morphism effects with multi-color gradients, added pseudo-element shine overlays on glass elements, enhanced button hover effects with gradient sweep animations, added themed scrollbar styling with gradients, increased blur and saturation for more depth, added scale transforms on hover for better feedback",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T04:37:29.690547"
+    },
+    {
+      "prompt": "Enhanced PDF export quality and styling",
+      "implementation": "Increased canvas scale to 3x for higher quality, added padding and gradient background to PDF, added subtle border styling, moved watermark to top-left with semi-transparent rounded background, increased watermark opacity to 85%, improved loading indicator with better messaging, added success notification with filename, better PDF compression settings, improved filename format with date",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T04:40:37.525765"
+    },
+    {
+      "prompt": "Fix PDF export character image rendering",
+      "implementation": "Increased imageTimeout to 15000ms for proper image loading, disabled foreignObjectRendering for better image compatibility, added ignoreElements filter to exclude fixed overlays, added timeout fallback for watermark loading to prevent hanging",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T04:43:28.053237"
+    },
+    {
+      "prompt": "Fix PDF character images with preloading",
+      "implementation": "Preload all character images and convert to data URLs before PDF capture to avoid CORS issues, disabled useCORS since images are now data URLs, added progress indicators for image preparation and capture stages, improved error handling for individual image conversions",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T04:46:55.112060"
+    },
+    {
+      "prompt": "Fix PDF image rendering and stretch watermark",
+      "implementation": "Changed image loading approach to wait for images to complete loading naturally instead of converting to data URLs, enabled useCORS and logging for debugging, increased watermark size from 18% to 25% width for better visibility, reduced scale to 2.5x to improve rendering performance while maintaining quality",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T04:48:34.399257"
+    },
+    {
+      "prompt": "Add all unit character images",
+      "implementation": "Committed 137 unit character images to GitHub repository so they can be properly loaded from raw URLs during PDF export and normal usage",
+      "files": [
+        "Images/Units/"
+      ],
+      "timestamp": "2025-11-17T04:50:38.113314"
+    },
+    {
+      "prompt": "Fix unit and familiar image loading throughout application",
+      "implementation": "Created getCharacterImageUrl function to properly load unit images from GitHub raw URLs instead of relying only on custom uploads, created getFamiliarIconUrl function to map familiar names to icon filenames, updated CharacterCard to use new image functions, fixed modal image display to use GitHub URLs, fixed all familiar icon references in modal tabs, images now properly load from committed GitHub files",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T04:55:34.976599"
+    },
+    {
+      "prompt": "Add jpg fallback and enhance unit borders",
+      "implementation": "Added jpg format fallback for unit images when webp fails to load, implemented gradient-matching borders using border-image from rarity backgrounds, increased border thickness to 3px, enhanced shadow effects with layered box-shadows and inset shadows for depth, borders now use the same gradient as the unit's rarity background making them stand out more",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T04:57:59.844626"
+    },
+    {
+      "prompt": "Add distinctive Vanguard unit styling",
+      "implementation": "Vanguard units now have 4px borders (vs 3px for others), cyan pulsing glow effect with 3 layers of shadows (25px, 50px, 75px), animated pulsing border that grows from 4px to 5px, smooth 2-second pulse animation cycle, distinct cyan/teal glow makes Vanguard units immediately recognizable and stand out from other rarities",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T04:59:53.351021"
+    },
+    {
+      "prompt": "Add animated patterns and effects for all rarities",
+      "implementation": "Vanguard: rotating outer ring with gradient animation plus animated border that shifts colors, Mythic: shimmer effect that sweeps across the card with cyan glow, Exclusive: pulsing radial glow that scales and fades in red tones, all animations run on smooth infinite loops (2-3 seconds), each rarity now has unique visual identity with animated borders and particle effects",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T05:02:04.466508"
+    },
+    {
+      "prompt": "Add unique animated effects for each Vanguard unit",
+      "implementation": "Vsjw: shadowy purple pulses with dark wave sweeping across, Divalo: animated scythe slash effect cutting across border in red tones, Iscanur: flickering flames rising from bottom with orange glow, Koguro: ice-fire gradient that shifts between blue and orange, Rogita: yellow-gold Super Saiyan aura with rapid flickering, BrolziSuper: green Super Saiyan aura with rapid flickering, removed generic Vanguard animations, each unit now has character-specific themed border effects",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T05:08:09.062092"
+    },
+    {
+      "prompt": "Enhance Divalo scythe slash effect",
+      "implementation": "Added diagonal slash animation that sweeps across border every 4 seconds, slash appears for brief moment (5-30% of cycle) then disappears, bright red-white gradient creates sharp blade effect, added pulsing red glow background, enhanced drop shadows for glowing slash trail, slash now more visible and impactful with timed appearance",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T21:59:14.010459"
+    },
+    {
+      "prompt": "Enhance Divalo scythe slash effect",
+      "implementation": "Added diagonal slash animation that sweeps across border every 4 seconds, slash appears for brief moment (5-30% of cycle) then disappears, bright red-white gradient creates sharp blade effect, added pulsing red glow background, enhanced drop shadows for glowing slash trail, slash now more visible and impactful with timed appearance",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T22:00:07.761310"
+    },
+    {
+      "prompt": "Add videoplayback.mp4 to main menu top-right with looping audio",
+      "implementation": "Added video player element in top-right corner of main menu with themed border and hover effects. Added separate audio element that loops continuously across all menu views. Video is muted for autoplay compliance while audio plays separately.",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T22:04:20.931693"
+    },
+    {
+      "prompt": "Fix video and audio playback",
+      "implementation": "Added audio control button, error handlers, playsInline attribute, wrapped video in container div, added mute/unmute toggle, improved z-index positioning",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T22:11:01.722128"
+    },
+    {
+      "prompt": "Fix PDF export black boxes issue",
+      "implementation": "Added crossOrigin attribute to all character and familiar images, improved image preloading with proper CORS handling, increased imageTimeout to 15s, forced reload of images with crossOrigin before capture, added onclone callback to ensure cloned images have crossOrigin set",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T22:41:20.126848"
+    },
+    {
+      "prompt": "Fix PDF export black boxes issue",
+      "implementation": "Added crossOrigin attribute to all character and familiar images, improved image preloading with proper CORS handling, increased imageTimeout to 15s, forced reload of images with crossOrigin before capture, added onclone callback to ensure cloned images have crossOrigin set",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T22:44:34.471849"
+    },
+    {
+      "prompt": "Improve PDF export timing and loading process",
+      "implementation": "Increased initial loading delay to 500ms, added 800ms delay after image reload for processing, increased image timeout to 8s, added 1s breathing room after all images load, increased capture delay to 600ms for better reliability",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T22:54:02.963435"
+    },
+    {
+      "prompt": "Improve PDF transparency handling",
+      "implementation": "Added explicit opacity and visibility settings to cloned images, removed opacity from containers during clone, added windowWidth/windowHeight/scroll parameters for better rendering, ensured all images are fully opaque and visible in PDF capture",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T23:00:32.563851"
+    },
+    {
+      "prompt": "Remove PDF export functionality",
+      "implementation": "Removed exportToPDF function, removed PDF export button, updated guide to remove PDF export instructions, simplified export section to focus only on shareable links",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T23:09:38.932002"
+    },
+    {
+      "prompt": "Implement trait calculator UI foundation",
+      "implementation": "Added trait calculator state (calcSelectedUnit, unitSearchQuery, traitHistory), created two-column layout with unit selection on left and trait rolls on right, added searchable unit list with checkbox selection, added selected unit display box with CharacterCard, added Roll 1 section with Trait_Reroll.png icon, added trait history display box",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T23:15:45.069252"
+    },
+    {
+      "prompt": "Make trait calculator much larger and fix image path",
+      "implementation": "Increased calculator to full screen height (h-screen), increased padding and spacing throughout, enlarged all text sizes (3xl headers, lg/xl text), made CharacterCard 1.5x scale, updated Trait_Reroll image path to use .webp from backgrounds folder, changed layout proportions to 1/3 left and 2/3 right, increased checkbox and icon sizes",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T23:18:51.224529"
+    },
+    {
+      "prompt": "Implement trait rolling system with probabilities and colors",
+      "implementation": "Added traitProbabilities array with correct percentages (Vigor/Range/Swift 26%, Scholar 10%, Marksman 6.5%, Fortune 2.5%, Blitz 1.85%, Solar 0.5%, Deadeye 0.375%, Ethereal 0.175%, Monarch 0.1%), implemented rollTrait function with cumulative probability logic, added color coding (purple for Vigor, red for Range, blue for Swift, yellow for Scholar/Marksman/Fortune/Blitz, rainbow gradient for Solar/Deadeye/Ethereal/Monarch), updated trait history to display trait icons and colored text with timestamps, made roll button clickable with hover effect",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T23:27:27.787342"
+    },
+    {
+      "prompt": "Make name text smaller, display current trait next to name, and change all UI colors to dark shades in trait calculator",
+      "implementation": "Reduced unit name text from text-xl to text-base, added currentTrait state to track last rolled trait, displayed current trait with icon and colored text next to unit name, changed all emerald UI colors to darker shades (emerald-300, emerald-800, emerald-900), updated glass-card backgrounds to slate-900 with higher opacity, darkened borders and hover effects",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T23:32:53.014280"
+    },
+    {
+      "prompt": "Make name box much smaller, trait box bigger, add mythic celebration animation with confetti, and mythic trait toggles",
+      "implementation": "Made unit name input smaller (w-48, text-sm), enlarged trait display box with bigger icon (w-16) and text (text-3xl), added showMythicCelebration state and mythicTraitToggles state, created 10-second spinning animation (mythicSpin keyframe) that triggers on rainbow trait rolls, added confetti effect with 50 falling colored pieces, implemented mythic trait toggle UI with checkboxes for Solar/Deadeye/Ethereal/Monarch, updated rollTrait function to respect toggle state and recalculate probabilities, added glowing box-shadow effect during celebration",
+      "files": [
+        "src/components/TierListApp.jsx",
+        "src/index.css"
+      ],
+      "timestamp": "2025-11-17T23:38:04.198641"
+    },
+    {
+      "prompt": "Change mythic animation to only affect icon and only trigger for ultra-rare traits under 1%",
+      "implementation": "Modified rollTrait to only trigger celebration for traits with chance < 1% (Solar 0.5%, Deadeye 0.375%, Ethereal 0.175%, Monarch 0.1%), removed mythic-celebration class from trait box, created new mythic-icon-overlay with fixed positioning at screen center, replaced mythicSpin animation with mythicIconSpin that scales icon from 1x to 4x while spinning 1800 degrees over 10 seconds, added multi-colored drop-shadow effects (red, purple, green), icon fades in at start and out at end, confetti still triggers for all 4 ultra-rare traits",
+      "files": [
+        "src/components/TierListApp.jsx",
+        "src/index.css"
+      ],
+      "timestamp": "2025-11-17T23:40:36.716879"
+    },
+    {
+      "prompt": "Reduce animation to 3 seconds, add roll blocking, replace emerald with purple theme, create slick roll button",
+      "implementation": "Reduced mythic celebration from 10s to 3s, added isRolling state to prevent rolling during animation, changed all emerald colors to purple/violet/indigo throughout trait calculator (headers, borders, hovers, checkboxes, toggles), created new slick roll button with gradient background (purple-900 to indigo-900), added shimmer animation, button shows spinning icons and ROLLING text when active, button disabled when no unit selected or currently rolling, updated confetti timing to match 3s duration, changed trait calculator menu button and page header to purple theme",
+      "files": [
+        "src/components/TierListApp.jsx",
+        "src/index.css"
+      ],
+      "timestamp": "2025-11-17T23:45:18.618047"
+    },
+    {
+      "prompt": "Make mythic icon animation start from trait box, spin to center, then return",
+      "implementation": "Updated mythicIconSpin animation to start small (0.5 scale) from trait box position on right side, travel to center while growing and spinning (reaching 4.5x scale at center with 1800deg rotation), then return back to trait box while shrinking (back to 0.2 scale) and continuing to spin (total 3600deg = 10 full rotations), animation creates smooth circular path from trait box to center and back over 3 seconds",
+      "files": [
+        "src/index.css"
+      ],
+      "timestamp": "2025-11-17T23:47:20.150487"
+    },
+    {
+      "prompt": "Make icon spin to exact center and remove bounce effect",
+      "implementation": "Changed mythicIconSpin animation to travel to exact center of page (translate -50%, -50%) at 50% keyframe, removed elastic cubic-bezier easing and replaced with smooth ease-in-out for no bounce effect, increased total rotation to 4320deg (12 full spins), icon now smoothly grows from 0.5x to 4.5x at center then smoothly shrinks back to 0.2x",
+      "files": [
+        "src/index.css"
+      ],
+      "timestamp": "2025-11-17T23:48:37.897353"
+    },
+    {
+      "prompt": "Simplify animation to show icon in center with shine effect",
+      "implementation": "Completely redesigned mythicIconSpin animation to display icon directly in center of page, grows from scale 0 to 5.5x while spinning 3600deg (10 rotations), added animated shine effect with intensifying drop-shadow filters (red, purple, green glows increasing from 0 to 240px), peak shine at 70% keyframe then fades out, removed travel path animation, icon stays centered throughout",
+      "files": [
+        "src/index.css"
+      ],
+      "timestamp": "2025-11-17T23:51:26.809750"
+    },
+    {
+      "prompt": "Remove complex animation, just pop icon up with confetti",
+      "implementation": "Replaced mythicIconSpin with simple mythicIconPop animation, icon quickly pops in with slight bounce (scale 0 to 1.1 to 1), stays visible in center for most of 3 seconds, then pops out, no rotation or shine effects, increased icon size to 256px for better visibility, confetti effect remains active",
+      "files": [
+        "src/index.css"
+      ],
+      "timestamp": "2025-11-17T23:53:39.348793"
+    },
+    {
+      "prompt": "Make icon display in absolute center of screen using flexbox",
+      "implementation": "Changed mythic-icon-overlay from top/left positioning to flexbox centering (width 100vw, height 100vh with display flex, align-items center, justify-content center), removed translate transforms from animation keyframes since flexbox handles centering, icon now displays in exact mathematical center of viewport",
+      "files": [
+        "src/index.css"
+      ],
+      "timestamp": "2025-11-17T23:55:14.494533"
+    },
+    {
+      "prompt": "Move mythic icon overlay to root level for proper centering",
+      "implementation": "Moved mythic-icon-overlay from inside trait calculator container to root level of component (before closing div), this removes parent container constraints and allows flexbox to center icon properly relative to entire viewport instead of being positioned relative to nested container",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-17T23:56:53.343083"
+    },
+    {
+      "prompt": "Add backdrop to icon overlay and implement tiered traits",
+      "implementation": "Added semi-transparent black backdrop (rgba 0,0,0,0.7) to mythic-icon-overlay to prevent background over-highlighting icon, implemented tiered variants for Vigor/Range/Swift with Roman numerals (50% chance I, 35% II, 15% III), updated all trait icon image sources to use split on space to extract base trait name for correct .webp file paths, tier level displays in trait name while using base icon",
+      "files": [
+        "src/index.css",
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-18T00:01:33.122599"
+    },
+    {
+      "prompt": "Rename Trait Calculator to Trait Roller",
+      "implementation": "Changed all references from \"Trait Calculator\" to \"Trait Roller\" including menu button title, menu button description (Calculate to Roll), page header title, and page description, also changed icon from abacus emoji to dice emoji for better thematic match with rolling mechanic",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-18T00:04:30.797256"
+    },
+    {
+      "prompt": "Move trait icon to top-right corner of unit card",
+      "implementation": "Repositioned trait icon from trait name box to top-right corner of unit card using absolute positioning, added relative positioning to CharacterCard wrapper, icon now displays at -top-2 -right-2 with z-10, added purple border and glow effects (border-2 border-purple-500, shadow-lg shadow-purple-500/50, drop-shadow filter), reduced icon size to w-12 h-12 for better proportion on unit card, trait name text remains in separate box",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-18T00:06:28.043333"
+    },
+    {
+      "prompt": "Make trait icon display like familiar overlay on unit card",
+      "implementation": "Modified CharacterCard component to accept traitIcon prop, added trait icon overlay positioned at top-0 right-0 matching familiar overlay positioning, icon displays at w-8 h-8 size with rounded-bl-lg corner (mirrors familiar rounded-tl-lg), removed external wrapper and styling, trait icon now integrated directly into CharacterCard component at z-30 layer, added traitError state for error handling",
+      "files": [
+        "src/components/TierListApp.jsx"
+      ],
+      "timestamp": "2025-11-18T00:08:25.972094"
+    }
+  ],
+  "lastProcessedCount": 61
+}
