@@ -1611,6 +1611,14 @@ const TierListApp = () => {
             >
               📖 Guide
             </button>
+            <a
+              href="https://github.com/hawktuahcoin-hurhur"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="glass-card px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-semibold text-purple-400 hover:text-purple-300 glass-hover transition-all flex items-center gap-1 sm:gap-2"
+            >
+              🔗 Github
+            </a>
           </div>
 
           {/* Audio Player - Loops Continuously */}
