@@ -1740,6 +1740,13 @@ const TierListApp = () => {
                   </button>
                 ))}
               </div>
+              
+              {/* Disclaimer */}
+              <div className="glass-card rounded-lg p-3 mt-4 border-2 border-yellow-600 border-opacity-40">
+                <p className="text-yellow-300 text-xs leading-relaxed">
+                  <strong>💡 Note:</strong> Enable <span className="text-yellow-200 font-semibold">Dev Mode</span> to edit unit notes, custom images, and tier list details.
+                </p>
+              </div>
             </div>
 
             {/* Center - Patch Notes */}
@@ -2318,7 +2325,7 @@ const TierListApp = () => {
         </div>
 
         {/* Create Tierlist Button */}
-        <div className="flex justify-center mb-4 sm:mb-6 px-2">
+        <div className="flex flex-col items-center gap-2 mb-4 sm:mb-6 px-2">
           <button
             onClick={generateShareableLink}
             className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-base lg:text-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-xl shadow-green-500/30 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2 sm:gap-3"
@@ -2327,6 +2334,12 @@ const TierListApp = () => {
             <span className="hidden sm:inline">Create Shareable Tierlist</span>
             <span className="sm:hidden">Share Tierlist</span>
           </button>
+          
+          {!devMode && (
+            <div className="glass-card px-4 py-2 rounded-lg text-xs sm:text-sm text-slate-300 text-center max-w-md">
+              💡 <span className="font-semibold">Tip:</span> Enable <span className="text-purple-400 font-bold">Dev Mode</span> to edit unit notes, add custom traits, and unlock advanced features!
+            </div>
+          )}
         </div>
 
         <div id="tierlist-container" className="space-y-2 sm:space-y-3 mb-6 sm:mb-8 transition-all duration-500 ease-in-out px-2">
