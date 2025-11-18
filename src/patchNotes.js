@@ -2,7 +2,23 @@
 // Format: {name} v{version} - {date}
 // Version increments: +0.01 (1-3 changes), +0.1 (4-6 changes), +1.0 (7+ changes)
 
+export const currentVersion = "0.1";
+
 export const patchNotes = [
+  {
+    version: "0.1",
+    name: "Mobile & Custom Lists",
+    date: "2025-11-18",
+    changes: [
+      "📱 Full Mobile Responsiveness - Optimized layouts for phones, tablets, and all screen sizes",
+      "📏 Custom Tier Lists - Create your own tier lists with custom tiers and categories in Dev Mode",
+      "✏️ Tier Management - Add, rename, and delete custom tiers and categories",
+      "🔄 Auto-Reload System - Page automatically reloads when new version is published",
+      "👆 Touch Optimizations - Better button sizes and active states for mobile devices",
+      "📐 Responsive Typography - Text scales appropriately across all device sizes",
+      "🎯 Improved Navigation - Abbreviated labels and better spacing on small screens"
+    ]
+  },
   {
     version: "0.0",
     name: "Release",

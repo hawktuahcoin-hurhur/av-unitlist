@@ -1,13 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, Search, X } from 'lucide-react';
 import { unitPassivesData } from '../unitPassives';
-import { patchNotes } from '../patchNotes';
+import { patchNotes, currentVersion } from '../patchNotes';
 import { ADVANCED_DEV_KEY } from '../config';
 import { familiarPassives } from '../familiarPassives';
 
 const TierListApp = () => {
-  const tiers = ['High Tier Meta', 'Meta', 'Low Tier Meta', 'Good', 'Mid', 'Bad'];
-  const categories = ['General Use', 'Pure DPS', 'Support (Buffs)', 'Support (Debuffs)', 'Crowd Control', 'Boss Killing'];
+  const defaultTiers = ['High Tier Meta', 'Meta', 'Low Tier Meta', 'Good', 'Mid', 'Bad'];
+  const defaultCategories = ['General Use', 'Pure DPS', 'Support (Buffs)', 'Support (Debuffs)', 'Crowd Control', 'Boss Killing'];
+  
+  const [customTiers, setCustomTiers] = useState(() => {
+    const saved = localStorage.getItem('customTiers');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [customCategories, setCustomCategories] = useState(() => {
+    const saved = localStorage.getItem('customCategories');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [customTierData, setCustomTierData] = useState(() => {
+    const saved = localStorage.getItem('customTierData');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [isCustomMode, setIsCustomMode] = useState(false);
+  
+  const tiers = isCustomMode ? customTiers : defaultTiers;
+  const categories = isCustomMode ? customCategories : defaultCategories;
   
   // Base URL for GitHub images
   const imageBaseUrl = 'https://raw.githubusercontent.com/hawktuahcoin-hurhur/av-unitlist/main/';
@@ -49,6 +66,13 @@ const TierListApp = () => {
   const [shareableLink, setShareableLink] = useState('');
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [audioMuted, setAudioMuted] = useState(false);
+  
+  // Custom tier list state
+  const [showCustomTierManager, setShowCustomTierManager] = useState(false);
+  const [newTierName, setNewTierName] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [editingTierIndex, setEditingTierIndex] = useState(null);
+  const [editingCategoryIndex, setEditingCategoryIndex] = useState(null);
   
   // Trait calculator state
   const [calcSelectedUnit, setCalcSelectedUnit] = useState(null);
@@ -163,6 +187,118 @@ const TierListApp = () => {
   // Get unit passives from imported data
   const getUnitPassives = (character) => {
     return unitPassivesData[character] || { passives: ['No passive data available'] };
+  };
+  
+  // Custom tier list management functions
+  const addCustomTier = () => {
+    if (newTierName.trim() && !customTiers.includes(newTierName.trim())) {
+      const updatedTiers = [...customTiers, newTierName.trim()];
+      setCustomTiers(updatedTiers);
+      
+      // Initialize this tier in all custom categories
+      const updatedData = { ...customTierData };
+      customCategories.forEach(cat => {
+        if (!updatedData[cat]) updatedData[cat] = {};
+        updatedData[cat][newTierName.trim()] = [];
+      });
+      setCustomTierData(updatedData);
+      setNewTierName('');
+    }
+  };
+  
+  const addCustomCategory = () => {
+    if (newCategoryName.trim() && !customCategories.includes(newCategoryName.trim())) {
+      const updatedCategories = [...customCategories, newCategoryName.trim()];
+      setCustomCategories(updatedCategories);
+      
+      // Initialize this category with all custom tiers
+      const updatedData = { ...customTierData };
+      updatedData[newCategoryName.trim()] = {};
+      customTiers.forEach(tier => {
+        updatedData[newCategoryName.trim()][tier] = [];
+      });
+      setCustomTierData(updatedData);
+      setNewCategoryName('');
+    }
+  };
+  
+  const renameCustomTier = (oldName, newName) => {
+    if (newName.trim() && newName !== oldName) {
+      const updatedTiers = customTiers.map(t => t === oldName ? newName : t);
+      setCustomTiers(updatedTiers);
+      
+      // Update tier data keys
+      const updatedData = { ...customTierData };
+      Object.keys(updatedData).forEach(cat => {
+        if (updatedData[cat][oldName]) {
+          updatedData[cat][newName] = updatedData[cat][oldName];
+          delete updatedData[cat][oldName];
+        }
+      });
+      setCustomTierData(updatedData);
+      setEditingTierIndex(null);
+    }
+  };
+  
+  const renameCustomCategory = (oldName, newName) => {
+    if (newName.trim() && newName !== oldName) {
+      const updatedCategories = customCategories.map(c => c === oldName ? newName : c);
+      setCustomCategories(updatedCategories);
+      
+      // Update category data keys
+      const updatedData = { ...customTierData };
+      if (updatedData[oldName]) {
+        updatedData[newName] = updatedData[oldName];
+        delete updatedData[oldName];
+      }
+      setCustomTierData(updatedData);
+      
+      if (selectedCategory === oldName) {
+        setSelectedCategory(newName);
+      }
+      setEditingCategoryIndex(null);
+    }
+  };
+  
+  const deleteCustomTier = (tierName) => {
+    const updatedTiers = customTiers.filter(t => t !== tierName);
+    setCustomTiers(updatedTiers);
+    
+    // Remove from tier data
+    const updatedData = { ...customTierData };
+    Object.keys(updatedData).forEach(cat => {
+      delete updatedData[cat][tierName];
+    });
+    setCustomTierData(updatedData);
+  };
+  
+  const deleteCustomCategory = (categoryName) => {
+    const updatedCategories = customCategories.filter(c => c !== categoryName);
+    setCustomCategories(updatedCategories);
+    
+    // Remove from tier data
+    const updatedData = { ...customTierData };
+    delete updatedData[categoryName];
+    setCustomTierData(updatedData);
+    
+    if (selectedCategory === categoryName && updatedCategories.length > 0) {
+      setSelectedCategory(updatedCategories[0]);
+    }
+  };
+  
+  const switchToCustomMode = () => {
+    if (customTiers.length === 0 || customCategories.length === 0) {
+      alert('Please create at least one tier and one category in the Custom Tier Manager first!');
+      setShowCustomTierManager(true);
+      return;
+    }
+    setIsCustomMode(true);
+    setSelectedCategory(customCategories[0]);
+  };
+  
+  const switchToDefaultMode = () => {
+    setIsCustomMode(false);
+    setSelectedCategory(defaultCategories[0]);
   };
 
   // Load character list from all available webp images
@@ -295,6 +431,43 @@ const TierListApp = () => {
       localStorage.setItem('devModeOverrides', JSON.stringify(devOverrides));
     }
   }, [devOverrides]);
+  
+  // Auto-save custom tiers and categories
+  useEffect(() => {
+    localStorage.setItem('customTiers', JSON.stringify(customTiers));
+  }, [customTiers]);
+  
+  useEffect(() => {
+    localStorage.setItem('customCategories', JSON.stringify(customCategories));
+  }, [customCategories]);
+  
+  useEffect(() => {
+    localStorage.setItem('customTierData', JSON.stringify(customTierData));
+  }, [customTierData]);
+  
+  // Version checking and auto-reload
+  useEffect(() => {
+    const checkVersion = () => {
+      const localVersion = localStorage.getItem('appVersion');
+      
+      if (!localVersion) {
+        // First time loading, save current version
+        localStorage.setItem('appVersion', currentVersion);
+        console.log(`App version set to: ${currentVersion}`);
+      } else if (localVersion !== currentVersion) {
+        // Version changed, reload the page
+        console.log(`Version updated: ${localVersion} → ${currentVersion}. Reloading...`);
+        localStorage.setItem('appVersion', currentVersion);
+        window.location.reload();
+      }
+    };
+    
+    checkVersion();
+    
+    // Check for updates every 5 minutes
+    const interval = setInterval(checkVersion, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const formatCharacterName = (name) => {
     return name.replace(/([A-Z])/g, ' $1').trim();
@@ -700,11 +873,22 @@ const TierListApp = () => {
     e.preventDefault();
     const character = e.dataTransfer.getData('character');
     
-    setTierData(prev => {
+    const dataToUpdate = isCustomMode ? customTierData : tierData;
+    const setDataFunction = isCustomMode ? setCustomTierData : setTierData;
+    
+    setDataFunction(prev => {
       const newData = { ...prev };
+      // Ensure category exists
+      if (!newData[selectedCategory]) {
+        newData[selectedCategory] = {};
+        tiers.forEach(t => newData[selectedCategory][t] = []);
+      }
+      // Remove from all tiers in this category
       tiers.forEach(t => {
+        if (!newData[selectedCategory][t]) newData[selectedCategory][t] = [];
         newData[selectedCategory][t] = newData[selectedCategory][t].filter(c => c !== character);
       });
+      // Add to target tier
       if (!newData[selectedCategory][tier].includes(character)) {
         newData[selectedCategory][tier] = [...newData[selectedCategory][tier], character];
       }
@@ -716,12 +900,18 @@ const TierListApp = () => {
     e.preventDefault();
     const character = e.dataTransfer.getData('character');
     
+    const setDataFunction = isCustomMode ? setCustomTierData : setTierData;
+    
     // Remove from all tiers
-    setTierData(prev => {
+    setDataFunction(prev => {
       const newData = { ...prev };
-      tiers.forEach(t => {
-        newData[selectedCategory][t] = newData[selectedCategory][t].filter(c => c !== character);
-      });
+      if (newData[selectedCategory]) {
+        tiers.forEach(t => {
+          if (newData[selectedCategory][t]) {
+            newData[selectedCategory][t] = newData[selectedCategory][t].filter(c => c !== character);
+          }
+        });
+      }
       return newData;
     });
   };
@@ -966,9 +1156,15 @@ const TierListApp = () => {
 
   const getUnassignedCharacters = () => {
     const assigned = new Set();
-    tiers.forEach(tier => {
-      tierData[selectedCategory][tier].forEach(char => assigned.add(char));
-    });
+    const dataToUse = isCustomMode ? customTierData : tierData;
+    
+    if (dataToUse[selectedCategory]) {
+      tiers.forEach(tier => {
+        if (dataToUse[selectedCategory][tier]) {
+          dataToUse[selectedCategory][tier].forEach(char => assigned.add(char));
+        }
+      });
+    }
     return characters.filter(c => !assigned.has(c));
   };
 
@@ -1262,7 +1458,7 @@ const TierListApp = () => {
 
   return (
     <div 
-      className="min-h-screen p-6 relative"
+      className="min-h-screen p-2 sm:p-4 lg:p-6 relative"
       style={{
         backgroundImage: `url('${imageBaseUrl}Images/backgrounds/bgs/${encodeURIComponent(currentBackground)}')`,
         backgroundPosition: 'center center',
@@ -1389,28 +1585,28 @@ const TierListApp = () => {
         }
       `}</style>
       {currentView === 'menu' ? (
-        <div className={`flex flex-col h-screen ${isTransitioning ? 'page-transition-exit' : 'page-transition-enter'} relative`}>
+        <div className={`flex flex-col min-h-screen ${isTransitioning ? 'page-transition-exit' : 'page-transition-enter'} relative`}>
           {/* Feedback Links - Top Left */}
-          <div className="absolute top-6 left-6 flex gap-3 z-50">
+          <div className="absolute top-2 sm:top-4 lg:top-6 left-2 sm:left-4 lg:left-6 flex flex-col sm:flex-row gap-2 sm:gap-3 z-50">
             <a
               href="https://docs.google.com/forms/d/1u4aCoOpiv3L7Z6QCHgzH6thwwWdEeZNI320oBcOgZCQ/edit"
               target="_blank"
               rel="noopener noreferrer"
-              className="glass-card px-4 py-2 rounded-lg text-sm font-semibold text-red-400 hover:text-red-300 glass-hover transition-all flex items-center gap-2"
+              className="glass-card px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-semibold text-red-400 hover:text-red-300 glass-hover transition-all flex items-center gap-1 sm:gap-2"
             >
-              🐛 Bug Reports
+              🐛 <span className="hidden sm:inline">Bug Reports</span><span className="sm:hidden">Bugs</span>
             </a>
             <a
               href="https://docs.google.com/forms/d/1EdYUAhXflSGNc8IhE0DvawsVA5GraZ8dFmWbMO3vK6s/edit"
               target="_blank"
               rel="noopener noreferrer"
-              className="glass-card px-4 py-2 rounded-lg text-sm font-semibold text-blue-400 hover:text-blue-300 glass-hover transition-all flex items-center gap-2"
+              className="glass-card px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-semibold text-blue-400 hover:text-blue-300 glass-hover transition-all flex items-center gap-1 sm:gap-2"
             >
-              💡 Suggestions
+              💡 <span className="hidden sm:inline">Suggestions</span><span className="sm:hidden">Ideas</span>
             </a>
             <button
               onClick={() => setShowGuideModal(true)}
-              className="glass-card px-4 py-2 rounded-lg text-sm font-semibold hover:text-white glass-hover transition-all flex items-center gap-2"
+              className="glass-card px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-semibold hover:text-white glass-hover transition-all flex items-center gap-1 sm:gap-2"
               style={{ color: currentTheme.accent }}
             >
               📖 Guide
@@ -1428,9 +1624,9 @@ const TierListApp = () => {
           </audio>
 
           {/* Title at Top */}
-          <div className="text-center mb-6 relative pt-8">
+          <div className="text-center mb-4 sm:mb-6 relative pt-4 sm:pt-8 px-2">
             <h1 
-              className="text-7xl font-black mb-4 transition-all duration-500"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-2 sm:mb-3 lg:mb-4 transition-all duration-500"
               style={{
                 color: currentTheme.accent,
                 textShadow: `0 0 40px ${currentTheme.accent}80, 0 0 20px ${currentTheme.accent}60`
@@ -1439,12 +1635,12 @@ const TierListApp = () => {
               Anime Vanguards
             </h1>
             <p 
-              className="text-2xl font-bold mb-2 transition-all duration-500"
+              className="text-lg sm:text-xl lg:text-2xl font-bold mb-1 sm:mb-2 transition-all duration-500"
               style={{ color: currentTheme.accent }}
             >
               Tier List Creator
             </p>
-            <p className="text-lg text-slate-400">Update 9 Anniversary • {characters.length} Units</p>
+            <p className="text-sm sm:text-base lg:text-lg text-slate-400">Update 9 Anniversary • {characters.length} Units</p>
             
             {/* Video Player - Center Right */}
             <div className="hidden xl:flex absolute top-0 right-[280px] flex-col gap-2">
@@ -1486,12 +1682,12 @@ const TierListApp = () => {
             </div>
             
             {/* Dev Mode Toggles */}
-            <div className="absolute top-0 right-0 flex flex-col gap-2">
+            <div className="absolute top-2 sm:top-0 right-2 sm:right-0 flex flex-col gap-1 sm:gap-2">
               <button
                 onClick={() => setDevMode(!devMode)}
-                className={`px-6 py-3 rounded-lg text-base font-semibold transition-all ${devMode ? 'bg-purple-600 bg-opacity-80 backdrop-blur-lg text-white ring-2 ring-purple-400 shadow-lg shadow-purple-500/50' : 'glass-card text-slate-300 hover:text-white glass-hover'}`}
+                className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 lg:py-3 rounded-md sm:rounded-lg text-xs sm:text-sm lg:text-base font-semibold transition-all ${devMode ? 'bg-purple-600 bg-opacity-80 backdrop-blur-lg text-white ring-2 ring-purple-400 shadow-lg shadow-purple-500/50' : 'glass-card text-slate-300 hover:text-white glass-hover'}`}
               >
-                {devMode ? '🔧 Dev Mode ON' : '🔧 Dev Mode'}
+                🔧 {devMode ? <><span className="hidden sm:inline">Dev Mode </span>ON</> : <span className="hidden sm:inline">Dev Mode</span>}
               </button>
               
               {devMode && (
@@ -1512,22 +1708,22 @@ const TierListApp = () => {
           </div>
 
           {/* Main Content Area */}
-          <div className="flex gap-8 flex-1">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 flex-1 overflow-auto">
             {/* Left Sidebar - Tier List Categories */}
-            <div className="w-72 flex-shrink-0 flex flex-col h-full">
-              <div className="glass rounded-xl p-4 mb-3 backdrop-blur-xl">
-                <h3 className="text-cyan-400 font-bold text-lg mb-0.5">Tier Lists</h3>
+            <div className="w-full lg:w-72 flex-shrink-0 flex flex-col">
+              <div className="glass rounded-xl p-3 lg:p-4 mb-3 backdrop-blur-xl">
+                <h3 className="text-cyan-400 font-bold text-base lg:text-lg mb-0.5">Tier Lists</h3>
                 <p className="text-slate-400 text-xs">Select category</p>
               </div>
-              <div className="flex-1 flex flex-col justify-between gap-3 overflow-hidden">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-col gap-2 lg:gap-3">
                 {categories.map(cat => (
                   <button
                     key={cat}
                     onClick={() => changeView('tierlist', cat)}
-                    className="group glass-card rounded-lg p-2 md:p-3 lg:p-4 hover:border-cyan-500 glass-hover transition-all duration-300 text-left flex-1"
+                    className="group glass-card rounded-lg p-3 lg:p-4 hover:border-cyan-500 glass-hover transition-all duration-300 text-left"
                   >
-                    <div className="flex items-center gap-2 md:gap-3 h-full">
-                      <div className="text-lg md:text-xl lg:text-2xl">
+                    <div className="flex items-center gap-2 lg:gap-3">
+                      <div className="text-xl lg:text-2xl">
                         {cat === 'General Use' && '⚔️'}
                         {cat === 'Pure DPS' && '💥'}
                         {cat === 'Support (Buffs)' && '✨'}
@@ -1547,10 +1743,10 @@ const TierListApp = () => {
             </div>
 
             {/* Center - Patch Notes */}
-            <div className="flex-1 flex items-center justify-center px-4 md:px-6 lg:px-8">
-              <div className="glass-card rounded-xl p-4 md:p-5 lg:p-6 backdrop-blur-xl w-full max-w-md h-[400px] md:h-[500px] lg:h-[600px] flex flex-col">
-                <h3 className="text-cyan-400 font-bold text-xl md:text-2xl mb-2 text-center flex items-center justify-center gap-2">
-                  <span className="text-2xl md:text-3xl">📜</span> Patch Notes
+            <div className="flex-1 flex items-center justify-center px-2 sm:px-4">
+              <div className="glass-card rounded-xl p-4 lg:p-6 backdrop-blur-xl w-full max-w-md h-[400px] sm:h-[500px] lg:h-[600px] flex flex-col">
+                <h3 className="text-cyan-400 font-bold text-lg sm:text-xl lg:text-2xl mb-2 text-center flex items-center justify-center gap-2">
+                  <span className="text-2xl lg:text-3xl">📜</span> Patch Notes
                 </h3>
                 <p className="text-slate-400 text-xs text-center mb-4">Latest Updates</p>
                 
@@ -1612,22 +1808,22 @@ const TierListApp = () => {
           </div>
         </div>
       ) : currentView === 'traitcalc' ? (
-        <div className={`w-full h-screen px-8 py-4 ${isTransitioning ? 'page-transition-exit' : 'page-transition-enter'}`}>
-          <div className="text-center mb-6 relative">
+        <div className={`w-full h-screen px-2 sm:px-4 lg:px-8 py-3 sm:py-4 ${isTransitioning ? 'page-transition-exit' : 'page-transition-enter'}`}>
+          <div className="text-center mb-4 sm:mb-6 relative pt-12 sm:pt-0">
             <button
               onClick={() => changeView('menu')}
-              className="absolute top-0 left-0 px-4 py-2 rounded-lg font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all flex items-center gap-2"
+              className="absolute top-0 left-0 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all flex items-center gap-2"
             >
-              ← Back to Menu
+              ← <span className="hidden sm:inline">Back to Menu</span><span className="sm:hidden">Menu</span>
             </button>
-            <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-violet-500 to-indigo-600 mb-3">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-violet-500 to-indigo-600 mb-2 sm:mb-3">
               🎲 Trait Roller
             </h1>
-            <p className="text-xl text-slate-300">Roll for trait bonuses on your units</p>
+            <p className="text-sm sm:text-base lg:text-xl text-slate-300">Roll for trait bonuses on your units</p>
           </div>
 
-          <div className="glass rounded-2xl p-8 shadow-2xl h-[calc(100vh-200px)]">
-            <div className="flex gap-4 h-full">
+          <div className="glass rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-8 shadow-2xl overflow-auto">
+            <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 min-h-[600px] lg:h-[calc(100vh-200px)]">
               {/* Far left - Unit images grid */}
               <div className="w-64 flex flex-col">
                 {/* Search box */}
@@ -1671,25 +1867,25 @@ const TierListApp = () => {
               </div>
 
               {/* Middle - Unit display and history */}
-              <div className="flex-1 flex flex-col gap-4">
+              <div className="flex-1 flex flex-col gap-3 lg:gap-4">
                 {/* Top - Selected unit with name and trait */}
-                <div className="glass-card rounded-xl p-4 bg-slate-900 bg-opacity-80">
+                <div className="glass-card rounded-xl p-3 lg:p-4 bg-slate-900 bg-opacity-80">
                   {calcSelectedUnit ? (
-                    <div className="flex items-center gap-4">
-                      <div className="scale-150 origin-left">
+                    <div className="flex flex-col sm:flex-row items-center gap-3 lg:gap-4">
+                      <div className="scale-125 sm:scale-150 origin-center sm:origin-left">
                         <CharacterCard character={calcSelectedUnit} showUpload={false} traitIcon={unitCurrentTraits[calcSelectedUnit]} />
                       </div>
-                      <div className="flex-1 ml-8 flex items-center gap-4">
+                      <div className="flex-1 sm:ml-4 lg:ml-8 flex flex-col sm:flex-row items-center gap-2 sm:gap-4 w-full">
                         <input
                           type="text"
                           value={calcSelectedUnit}
                           readOnly
-                          className="w-48 glass-card text-white text-sm px-4 py-2 rounded-xl bg-slate-900 bg-opacity-70 font-medium"
+                          className="w-full sm:w-48 glass-card text-white text-sm px-4 py-2 rounded-xl bg-slate-900 bg-opacity-70 font-medium text-center sm:text-left"
                         />
                         {unitCurrentTraits[calcSelectedUnit] && (
-                          <div className="flex items-center gap-4 glass-card px-6 py-3 rounded-xl bg-slate-900 bg-opacity-70 flex-1">
+                          <div className="flex items-center justify-center gap-2 sm:gap-4 glass-card px-4 sm:px-6 py-2 sm:py-3 rounded-xl bg-slate-900 bg-opacity-70 flex-1">
                             <span 
-                              className="text-2xl font-bold"
+                              className="text-lg sm:text-xl lg:text-2xl font-bold"
                               style={unitCurrentTraits[calcSelectedUnit].color === 'rainbow' ? {
                                 background: 'linear-gradient(90deg, #ef4444, #f59e0b, #eab308, #22c55e, #3b82f6, #a855f7, #ec4899)',
                                 WebkitBackgroundClip: 'text',
@@ -1729,23 +1925,23 @@ const TierListApp = () => {
                 </div>
 
                 {/* Bottom - Trait History */}
-                <div className="glass-card rounded-xl p-4 flex-1 overflow-y-auto scrollbar-thin bg-slate-900 bg-opacity-80 flex flex-col-reverse">
+                <div className="glass-card rounded-xl p-3 lg:p-4 flex-1 overflow-y-auto scrollbar-thin bg-slate-900 bg-opacity-80 flex flex-col-reverse max-h-[400px] lg:max-h-none">
                   {!calcSelectedUnit || !(unitTraitHistories[calcSelectedUnit]?.length > 0) ? (
-                    <div className="text-slate-500 text-base text-center py-8">
+                    <div className="text-slate-500 text-sm lg:text-base text-center py-6 lg:py-8">
                       {!calcSelectedUnit ? 'No unit selected' : 'No traits rolled yet'}
                     </div>
                   ) : (
                     <>
                       <div className="space-y-2 flex flex-col-reverse">
                         {unitTraitHistories[calcSelectedUnit].map((trait, index) => (
-                          <div key={index} className="glass rounded-lg p-3 flex items-center gap-3 bg-slate-800 bg-opacity-60">
+                          <div key={index} className="glass rounded-lg p-2 lg:p-3 flex items-center gap-2 lg:gap-3 bg-slate-800 bg-opacity-60">
                             <img 
                               src={`${imageBaseUrl}Images/Trait Icons/${trait.name.split(' ')[0]}.webp`}
                               alt={trait.name}
-                              className="w-10 h-10"
+                              className="w-8 h-8 sm:w-10 sm:h-10"
                             />
                             <span 
-                              className="text-lg font-bold"
+                              className="text-base lg:text-lg font-bold"
                               style={trait.color === 'rainbow' ? {
                                 background: 'linear-gradient(90deg, #ef4444, #f59e0b, #eab308, #22c55e, #3b82f6, #a855f7, #ec4899)',
                                 WebkitBackgroundClip: 'text',
@@ -1766,10 +1962,10 @@ const TierListApp = () => {
               </div>
 
               {/* Far right - Toggles and roll button */}
-              <div className="w-80 flex flex-col gap-4">
+              <div className="w-full lg:w-80 flex flex-col gap-3 lg:gap-4">
                 {/* Roll Counters */}
-                <div className="glass-card rounded-xl p-4 bg-slate-900 bg-opacity-80 border-2 border-slate-700">
-                  <h4 className="text-slate-200 font-bold text-lg mb-3">Roll Statistics</h4>
+                <div className="glass-card rounded-xl p-3 lg:p-4 bg-slate-900 bg-opacity-80 border-2 border-slate-700">
+                  <h4 className="text-slate-200 font-bold text-base lg:text-lg mb-2 lg:mb-3">Roll Statistics</h4>
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300 text-sm">Total Rolls:</span>
@@ -1793,9 +1989,9 @@ const TierListApp = () => {
                 </div>
                 
                 {/* Mythic trait toggles */}
-                <div className="glass-card rounded-xl p-4 bg-slate-900 bg-opacity-80 border-2 border-slate-700">
-                  <h4 className="text-slate-200 font-bold text-lg mb-3">Mythic Toggles</h4>
-                  <div className="grid grid-cols-2 gap-2">
+                <div className="glass-card rounded-xl p-3 lg:p-4 bg-slate-900 bg-opacity-80 border-2 border-slate-700">
+                  <h4 className="text-slate-200 font-bold text-base lg:text-lg mb-2 lg:mb-3">Mythic Toggles</h4>
+                  <div className="grid grid-cols-4 sm:grid-cols-2 gap-2">
                     {['Solar', 'Deadeye', 'Ethereal', 'Monarch'].map(traitName => (
                       <div
                         key={traitName}
@@ -1866,15 +2062,15 @@ const TierListApp = () => {
                 <button
                   onClick={instantMonarchRoll}
                   disabled={isRolling || !calcSelectedUnit}
-                  className={`glass-card rounded-xl p-4 transition-all border-2 ${
+                  className={`glass-card rounded-xl p-3 lg:p-4 transition-all border-2 min-h-[50px] ${
                     isRolling || !calcSelectedUnit
                       ? 'opacity-50 cursor-not-allowed border-slate-600 bg-slate-800'
-                      : 'cursor-pointer border-yellow-600 bg-gradient-to-br from-yellow-900 via-amber-900 to-yellow-900 hover:border-yellow-500 hover:shadow-xl hover:shadow-yellow-500/30 transform hover:scale-105'
+                      : 'cursor-pointer border-yellow-600 bg-gradient-to-br from-yellow-900 via-amber-900 to-yellow-900 hover:border-yellow-500 hover:shadow-xl hover:shadow-yellow-500/30 transform hover:scale-105 active:scale-95'
                   }`}
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <span className="text-2xl">⚡</span>
-                    <span className="text-slate-200 font-bold text-sm">Instant Monarch</span>
+                    <span className="text-xl lg:text-2xl">⚡</span>
+                    <span className="text-slate-200 font-bold text-sm lg:text-base">Instant Monarch</span>
                   </div>
                 </button>
 
@@ -1882,28 +2078,28 @@ const TierListApp = () => {
                 <button
                   onClick={rollTrait}
                   disabled={isRolling || !calcSelectedUnit}
-                  className={`relative overflow-hidden rounded-xl p-6 transition-all duration-300 border-2 ${
+                  className={`relative overflow-hidden rounded-xl p-4 lg:p-6 transition-all duration-300 border-2 min-h-[60px] ${
                     isRolling || !calcSelectedUnit
                       ? 'opacity-50 cursor-not-allowed border-slate-600 bg-slate-800'
                       : 'cursor-pointer border-purple-600 bg-gradient-to-br from-purple-900 via-violet-900 to-indigo-900 hover:border-purple-500 hover:shadow-2xl hover:shadow-purple-500/50 transform hover:scale-105'
                   }`}
                 >
-                  <div className="relative z-10 flex flex-col items-center gap-3">
-                    <div className="flex items-center gap-3">
+                  <div className="relative z-10 flex flex-col items-center gap-2 lg:gap-3">
+                    <div className="flex items-center gap-2 lg:gap-3">
                       <img 
                         src={`${imageBaseUrl}Images/backgrounds/example images/Trait_Reroll.webp`}
                         alt="Trait Reroll"
-                        className={`w-12 h-12 ${
+                        className={`w-10 h-10 lg:w-12 lg:h-12 ${
                           isRolling ? 'animate-spin' : ''
                         }`}
                       />
-                      <span className="text-white font-black text-2xl tracking-wider">
+                      <span className="text-white font-black text-xl lg:text-2xl tracking-wider">
                         {isRolling ? 'ROLLING...' : 'ROLL'}
                       </span>
                       <img 
                         src={`${imageBaseUrl}Images/backgrounds/example images/Trait_Reroll.webp`}
                         alt="Trait Reroll"
-                        className={`w-12 h-12 ${
+                        className={`w-10 h-10 lg:w-12 lg:h-12 ${
                           isRolling ? 'animate-spin' : ''
                         }`}
                       />
@@ -1922,23 +2118,23 @@ const TierListApp = () => {
 
           {/* Choice menu modal for trait roller */}
           {traitRollerChoiceUnit && (
-            <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50" onClick={() => setTraitRollerChoiceUnit(null)}>
-              <div className="glass-card rounded-2xl p-8 max-w-md w-full mx-4 bg-slate-900 bg-opacity-95 border-2 border-purple-600" onClick={(e) => e.stopPropagation()}>
-                <h3 className="text-2xl font-bold text-purple-300 mb-6 text-center">{traitRollerChoiceUnit}</h3>
+            <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4" onClick={() => setTraitRollerChoiceUnit(null)}>
+              <div className="glass-card rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 max-w-md w-full bg-slate-900 bg-opacity-95 border-2 border-purple-600" onClick={(e) => e.stopPropagation()}>
+                <h3 className="text-xl sm:text-2xl font-bold text-purple-300 mb-4 sm:mb-6 text-center">{traitRollerChoiceUnit}</h3>
                 
-                <div className="flex justify-center mb-6">
-                  <div className="scale-150">
+                <div className="flex justify-center mb-4 sm:mb-6">
+                  <div className="scale-125 sm:scale-150">
                     <CharacterCard character={traitRollerChoiceUnit} showUpload={false} />
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   <button
                     onClick={() => {
                       setCalcSelectedUnit(traitRollerChoiceUnit);
                       setTraitRollerChoiceUnit(null);
                     }}
-                    className="w-full glass-card rounded-xl p-4 bg-purple-900 bg-opacity-40 border-2 border-purple-700 hover:bg-purple-800 hover:bg-opacity-60 transition-all text-white font-bold text-lg"
+                    className="w-full glass-card rounded-lg sm:rounded-xl p-3 sm:p-4 bg-purple-900 bg-opacity-40 border-2 border-purple-700 hover:bg-purple-800 hover:bg-opacity-60 active:scale-95 transition-all text-white font-bold text-base sm:text-lg"
                   >
                     Select for Rolling
                   </button>
@@ -1948,14 +2144,14 @@ const TierListApp = () => {
                       openModal(traitRollerChoiceUnit, null);
                       setTraitRollerChoiceUnit(null);
                     }}
-                    className="w-full glass-card rounded-xl p-4 bg-slate-800 bg-opacity-60 border-2 border-slate-700 hover:bg-slate-700 hover:bg-opacity-80 transition-all text-white font-bold text-lg"
+                    className="w-full glass-card rounded-lg sm:rounded-xl p-3 sm:p-4 bg-slate-800 bg-opacity-60 border-2 border-slate-700 hover:bg-slate-700 hover:bg-opacity-80 active:scale-95 transition-all text-white font-bold text-base sm:text-lg"
                   >
                     View Overview
                   </button>
                   
                   <button
                     onClick={() => setTraitRollerChoiceUnit(null)}
-                    className="w-full glass-card rounded-xl p-4 bg-slate-800 bg-opacity-40 border-2 border-slate-600 hover:bg-slate-700 hover:bg-opacity-60 transition-all text-slate-300 font-semibold"
+                    className="w-full glass-card rounded-lg sm:rounded-xl p-3 sm:p-4 bg-slate-800 bg-opacity-40 border-2 border-slate-600 hover:bg-slate-700 hover:bg-opacity-60 active:scale-95 transition-all text-slate-300 font-semibold text-base"
                   >
                     Cancel
                   </button>
@@ -1965,34 +2161,34 @@ const TierListApp = () => {
           )}
         </div>
       ) : currentView === 'unitlist' ? (
-        <div className={`w-full px-4 ${isTransitioning ? 'page-transition-exit' : 'page-transition-enter'}`}>
-          <div className="text-center mb-8 relative">
+        <div className={`w-full px-2 sm:px-4 lg:px-6 ${isTransitioning ? 'page-transition-exit' : 'page-transition-enter'}`}>
+          <div className="text-center mb-6 sm:mb-8 relative pt-12 sm:pt-0">
             <button
               onClick={() => changeView('menu')}
-              className="absolute top-0 left-0 px-4 py-2 rounded-lg font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all flex items-center gap-2"
+              className="absolute top-0 left-0 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all flex items-center gap-2"
             >
-              ← Back to Menu
+              ← <span className="hidden sm:inline">Back to Menu</span><span className="sm:hidden">Menu</span>
             </button>
-            <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-600 mb-3">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-600 mb-2 sm:mb-3">
               Unit List
             </h1>
-            <p className="text-lg text-slate-300">{characters.length} Total Units</p>
+            <p className="text-sm sm:text-base lg:text-lg text-slate-300">{characters.length} Total Units</p>
           </div>
 
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             <div className="relative max-w-2xl mx-auto">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={24} />
+              <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
               <input
                 type="text"
                 placeholder="Search units by name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full glass-card text-white pl-14 pr-6 py-4 rounded-xl focus:border-indigo-500 focus:outline-none text-lg transition-all focus:shadow-lg focus:shadow-indigo-500/30"
+                className="w-full glass-card text-white pl-10 sm:pl-14 pr-10 sm:pr-12 py-3 sm:py-4 rounded-lg sm:rounded-xl focus:border-indigo-500 focus:outline-none text-base sm:text-lg transition-all focus:shadow-lg focus:shadow-indigo-500/30"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                  className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -2000,16 +2196,16 @@ const TierListApp = () => {
             </div>
           </div>
 
-          <div className="glass rounded-2xl p-6 shadow-2xl">
-            <div className="flex flex-wrap gap-4">
+          <div className="glass rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 shadow-2xl">
+            <div className="flex flex-wrap gap-2 sm:gap-3 lg:gap-4">
               {characters
                 .filter(char => char.toLowerCase().includes(searchQuery.toLowerCase()))
                 .map(character => (
                   <CharacterCard key={character} character={character} showUpload={false} />
                 ))}
               {characters.filter(char => char.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
-                <div className="w-full text-center py-12">
-                  <p className="text-slate-400 text-xl">No units found matching "{searchQuery}"</p>
+                <div className="w-full text-center py-8 sm:py-12">
+                  <p className="text-slate-400 text-base sm:text-lg lg:text-xl">No units found matching "{searchQuery}"</p>
                 </div>
               )}
             </div>
@@ -2055,7 +2251,7 @@ const TierListApp = () => {
               </button>
             )}
           <h1 
-            className="text-6xl font-black mb-3 transition-all duration-500"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-2 lg:mb-3 transition-all duration-500"
             style={{
               color: currentTheme.accent,
               textShadow: `0 0 40px ${currentTheme.accent}80, 0 0 20px ${currentTheme.accent}60`
@@ -2064,22 +2260,55 @@ const TierListApp = () => {
             Anime Vanguards
           </h1>
           <p 
-            className="text-xl font-semibold mb-1 transition-all duration-500"
+            className="text-base sm:text-lg lg:text-xl font-semibold mb-1 transition-all duration-500"
             style={{ color: currentTheme.accent }}
           >
             Tier List Creator
           </p>
-          <p className="text-sm text-slate-400">Update 9 Anniversary • {characters.length} Units</p>
+          <p className="text-xs sm:text-sm text-slate-400">Update 9 Anniversary • {characters.length} Units</p>
         </div>
 
-        <div className="flex flex-wrap gap-3 justify-center mb-8">
-          {categories.map(cat => (
+        {/* Mode Switcher and Custom Tier Manager */}
+        {devMode && (
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center items-center mb-4 sm:mb-6 px-2">
+            <div className="flex gap-2">
+              <button
+                onClick={switchToDefaultMode}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                  !isCustomMode
+                    ? 'bg-cyan-600 text-white ring-2 ring-cyan-400 shadow-lg'
+                    : 'glass-card text-slate-300 hover:text-white glass-hover'
+                }`}
+              >
+                📋 Default Lists
+              </button>
+              <button
+                onClick={switchToCustomMode}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                  isCustomMode
+                    ? 'bg-purple-600 text-white ring-2 ring-purple-400 shadow-lg'
+                    : 'glass-card text-slate-300 hover:text-white glass-hover'
+                }`}
+              >
+                ⚡ Custom Lists
+              </button>
+            </div>
+            <button
+              onClick={() => setShowCustomTierManager(true)}
+              className="px-4 py-2 rounded-lg font-semibold text-sm bg-indigo-900 bg-opacity-80 text-indigo-200 hover:bg-indigo-800 transition-all shadow-lg flex items-center gap-2"
+            >
+              ⚙️ Manage Custom Tiers
+            </button>
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-4 sm:mb-6 lg:mb-8 px-2">\n          {categories.map(cat => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-6 py-3 rounded-xl font-bold transition-all duration-500 transform ${
+              className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-bold transition-all duration-500 transform ${
                 selectedCategory === cat
-                  ? 'bg-gradient-to-r from-cyan-600 to-blue-600 bg-opacity-90 backdrop-blur-lg text-white shadow-2xl shadow-cyan-500/50 scale-110 ring-2 ring-cyan-400'
+                  ? 'bg-gradient-to-r from-cyan-600 to-blue-600 bg-opacity-90 backdrop-blur-lg text-white shadow-2xl shadow-cyan-500/50 scale-105 sm:scale-110 ring-2 ring-cyan-400'
                   : 'glass-card text-slate-300 hover:text-white glass-hover hover:scale-105'
               }`}
             >
@@ -2089,68 +2318,74 @@ const TierListApp = () => {
         </div>
 
         {/* Create Tierlist Button */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4 sm:mb-6 px-2">
           <button
             onClick={generateShareableLink}
-            className="px-8 py-4 rounded-xl font-bold text-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-xl shadow-green-500/30 transition-all transform hover:scale-105 flex items-center gap-3"
+            className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-base lg:text-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-xl shadow-green-500/30 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2 sm:gap-3"
           >
             <span>🔗</span>
-            Create Shareable Tierlist
+            <span className="hidden sm:inline">Create Shareable Tierlist</span>
+            <span className="sm:hidden">Share Tierlist</span>
           </button>
         </div>
 
-        <div id="tierlist-container" className="space-y-3 mb-8 transition-all duration-500 ease-in-out">
-          {tiers.map(tier => (
+        <div id="tierlist-container" className="space-y-2 sm:space-y-3 mb-6 sm:mb-8 transition-all duration-500 ease-in-out px-2">
+          {tiers.map(tier => {
+            const currentData = isCustomMode ? customTierData : tierData;
+            const tierUnits = currentData[selectedCategory]?.[tier] || [];
+            
+            return (
             <div key={tier}>
-              <div className="flex gap-4 items-stretch">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch">
                 <div 
-                  className={`w-52 shrink-0 bg-gradient-to-r ${tierColors[tier]} rounded-xl shadow-xl flex items-center justify-center p-4 border-2 ${tierBorders[tier]} cursor-pointer hover:scale-105 transition-transform`}
+                  className={`w-full sm:w-40 lg:w-52 shrink-0 bg-gradient-to-r ${tierColors[tier] || 'from-slate-500 to-slate-600'} rounded-lg sm:rounded-xl shadow-xl flex items-center justify-center p-3 sm:p-4 border-2 ${tierBorders[tier] || 'border-slate-500'} cursor-pointer hover:scale-105 transition-transform`}
                   onClick={() => setShowTierInfo(showTierInfo === tier ? null : tier)}
                 >
-                  <span className="text-white font-black text-xl tracking-wide drop-shadow-lg">
+                  <span className="text-white font-black text-lg sm:text-xl tracking-wide drop-shadow-lg">
                     {tier}
                   </span>
                 </div>
                 <div
                   onDrop={(e) => handleDrop(e, tier)}
                   onDragOver={handleDragOver}
-                  className={`flex-1 min-h-28 glass-card rounded-xl p-4 flex flex-wrap gap-3 border-2 ${tierBorders[tier]} border-opacity-30 hover:border-opacity-60 transition-all duration-300 backdrop-blur-lg`}
+                  className={`flex-1 min-h-24 sm:min-h-28 glass-card rounded-lg sm:rounded-xl p-3 sm:p-4 flex flex-wrap gap-2 sm:gap-3 border-2 ${tierBorders[tier] || 'border-slate-500'} border-opacity-30 hover:border-opacity-60 transition-all duration-300 backdrop-blur-lg`}
                 >
-                  {tierData[selectedCategory][tier].length === 0 ? (
+                  {tierUnits.length === 0 ? (
                     <div className="w-full h-full flex items-center justify-center text-slate-600 text-sm italic">
                       Drag units here
                     </div>
                   ) : (
-                    tierData[selectedCategory][tier].map(character => (
+                    tierUnits.map(character => (
                       <CharacterCard key={character} character={character} showUpload={false} />
                     ))
                   )}
                 </div>
               </div>
-              {showTierInfo === tier && (
-                <div className={`mt-2 ml-56 mr-4 bg-gradient-to-r ${tierColors[tier]} bg-opacity-20 border-2 ${tierBorders[tier]} border-opacity-50 rounded-lg p-4 animate-slideDown`}>
-                  <p className="text-slate-200 text-sm leading-relaxed">
+              {showTierInfo === tier && tierDescriptions[tier] && (
+                <div className={`mt-2 sm:ml-44 lg:ml-56 bg-gradient-to-r ${tierColors[tier] || 'from-slate-500 to-slate-600'} bg-opacity-20 border-2 ${tierBorders[tier] || 'border-slate-500'} border-opacity-50 rounded-lg p-3 sm:p-4 animate-slideDown`}>
+                  <p className="text-slate-200 text-xs sm:text-sm leading-relaxed">
                     {tierDescriptions[tier]}
                   </p>
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
 
-        <div className="glass rounded-2xl p-6 shadow-2xl backdrop-blur-xl">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-200 to-slate-400">
+        <div className="glass rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 shadow-2xl backdrop-blur-xl">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-4 sm:mb-5">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-200 to-slate-400">
               Available Units
             </h2>
-            <div className="px-4 py-2 glass-card rounded-full backdrop-blur-lg">
-              <span className="text-cyan-200 font-bold text-lg">
+            <div className="px-3 sm:px-4 py-1.5 sm:py-2 glass-card rounded-full backdrop-blur-lg">
+              <span className="text-cyan-200 font-bold text-sm sm:text-base lg:text-lg">
                 {getUnassignedCharacters().length} units
               </span>
             </div>
           </div>
           <div 
-            className="flex flex-wrap gap-4"
+            className="flex flex-wrap gap-2 sm:gap-3 lg:gap-4"
             onDrop={handleDropOnAvailable}
             onDragOver={handleDragOver}
           >
@@ -2159,6 +2394,196 @@ const TierListApp = () => {
             ))}
           </div>
         </div>
+        </div>
+      )}
+
+      {/* Custom Tier Manager Modal */}
+      {showCustomTierManager && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn overflow-y-auto" 
+          onClick={() => setShowCustomTierManager(false)}
+        >
+          <div 
+            className="glass rounded-2xl p-6 sm:p-8 max-w-4xl w-full border-2 border-indigo-500 shadow-2xl animate-scaleIn backdrop-blur-2xl my-8" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-start mb-6">
+              <h3 className="text-xl sm:text-2xl font-bold text-indigo-400">⚙️ Custom Tier Manager</h3>
+              <button 
+                onClick={() => setShowCustomTierManager(false)} 
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Tier Management */}
+              <div>
+                <h4 className="text-lg font-bold text-purple-300 mb-3">Tiers (Rows)</h4>
+                <div className="glass-card rounded-lg p-4 mb-4">
+                  <div className="flex gap-2 mb-4">
+                    <input
+                      type="text"
+                      value={newTierName}
+                      onChange={(e) => setNewTierName(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addCustomTier()}
+                      placeholder="New tier name..."
+                      className="flex-1 px-3 py-2 rounded-lg glass text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                    <button
+                      onClick={addCustomTier}
+                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-all"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {customTiers.map((tier, index) => (
+                      <div key={index} className="flex items-center gap-2 bg-slate-800 bg-opacity-60 p-2 rounded-lg">
+                        {editingTierIndex === index ? (
+                          <>
+                            <input
+                              type="text"
+                              defaultValue={tier}
+                              onBlur={(e) => renameCustomTier(tier, e.target.value)}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  renameCustomTier(tier, e.target.value);
+                                }
+                              }}
+                              autoFocus
+                              className="flex-1 px-2 py-1 rounded glass text-white text-sm focus:outline-none"
+                            />
+                            <button
+                              onClick={() => setEditingTierIndex(null)}
+                              className="text-slate-400 hover:text-white text-xs"
+                            >
+                              ✓
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <span className="flex-1 text-sm text-white">{tier}</span>
+                            <button
+                              onClick={() => setEditingTierIndex(index)}
+                              className="text-blue-400 hover:text-blue-300 text-xs"
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm(`Delete tier "${tier}"?`)) deleteCustomTier(tier);
+                              }}
+                              className="text-red-400 hover:text-red-300 text-xs"
+                            >
+                              🗑️
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                    {customTiers.length === 0 && (
+                      <p className="text-slate-500 text-sm text-center py-4">No custom tiers yet</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Category Management */}
+              <div>
+                <h4 className="text-lg font-bold text-cyan-300 mb-3">Categories (Columns)</h4>
+                <div className="glass-card rounded-lg p-4 mb-4">
+                  <div className="flex gap-2 mb-4">
+                    <input
+                      type="text"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addCustomCategory()}
+                      placeholder="New category name..."
+                      className="flex-1 px-3 py-2 rounded-lg glass text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    />
+                    <button
+                      onClick={addCustomCategory}
+                      className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-semibold text-sm transition-all"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {customCategories.map((category, index) => (
+                      <div key={index} className="flex items-center gap-2 bg-slate-800 bg-opacity-60 p-2 rounded-lg">
+                        {editingCategoryIndex === index ? (
+                          <>
+                            <input
+                              type="text"
+                              defaultValue={category}
+                              onBlur={(e) => renameCustomCategory(category, e.target.value)}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  renameCustomCategory(category, e.target.value);
+                                }
+                              }}
+                              autoFocus
+                              className="flex-1 px-2 py-1 rounded glass text-white text-sm focus:outline-none"
+                            />
+                            <button
+                              onClick={() => setEditingCategoryIndex(null)}
+                              className="text-slate-400 hover:text-white text-xs"
+                            >
+                              ✓
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <span className="flex-1 text-sm text-white">{category}</span>
+                            <button
+                              onClick={() => setEditingCategoryIndex(index)}
+                              className="text-blue-400 hover:text-blue-300 text-xs"
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm(`Delete category "${category}"?`)) deleteCustomCategory(category);
+                              }}
+                              className="text-red-400 hover:text-red-300 text-xs"
+                            >
+                              🗑️
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                    {customCategories.length === 0 && (
+                      <p className="text-slate-500 text-sm text-center py-4">No custom categories yet</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="glass-card rounded-lg p-4 mt-6">
+              <p className="text-slate-400 text-sm mb-2">
+                <strong>💡 Tips:</strong>
+              </p>
+              <ul className="text-slate-400 text-xs space-y-1 ml-4">
+                <li>• Create at least one tier and one category to use custom lists</li>
+                <li>• Click "Custom Lists" button to switch to your custom tier list</li>
+                <li>• Custom lists are saved separately from default lists</li>
+                <li>• Rename or delete tiers/categories anytime</li>
+              </ul>
+            </div>
+
+            <button
+              onClick={() => setShowCustomTierManager(false)}
+              className="w-full mt-6 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all"
+            >
+              Done
+            </button>
+          </div>
         </div>
       )}
 
